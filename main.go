@@ -32,20 +32,10 @@ func main() {
 		os.Exit(5)
 	}
 
-	var rblDomains []string
-	var err error
-	if RBLFile != "" {
-		rblDomains, err = loadRBLFromFile(RBLFile)
-		if err != nil {
-			fmt.Printf("Error loading RBL domains from file '%s': %s\n", RBLFile, err.Error())
-		}
-	} else {
-		rblDomains = []string{RBLAddress}
-	}
-
-	var rbls []*RBL
-	for _, domain := range rblDomains {
-		rbls = append(rbls, NewRBL(domain, ""))
+	rbls, err := loadRBLs(RBLAddress, RBLFile)
+	if err != nil {
+		fmt.Print(err.Error())
+		os.Exit(5)
 	}
 
 	for _, rbl := range rbls {
@@ -57,6 +47,26 @@ func main() {
 		fmt.Printf("rbl=%s, ip=%s, blocked=%t, reason=%s\n", rbl.Domain, CheckedIP, result.IsBlocked, result.BlockReason)
 	}
 
+}
+
+func loadRBLs(rblAddress, rblFile string) ([]*RBL, error) {
+	var rblDomains []string
+	var err error
+	if RBLFile != "" {
+		rblDomains, err = loadRBLFromFile(RBLFile)
+		if err != nil {
+			return nil, fmt.Errorf("Error loading RBL domains from file '%s': %s", RBLFile, err.Error())
+		}
+	} else {
+		rblDomains = []string{RBLAddress}
+	}
+
+	var rbls []*RBL
+	for _, domain := range rblDomains {
+		rbls = append(rbls, NewRBL(domain, ""))
+	}
+
+	return rbls, nil
 }
 
 func loadRBLFromFile(fname string) ([]string, error) {
