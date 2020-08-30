@@ -21,7 +21,7 @@ func (r *RBLResult) String() string {
 	if r.IsBlocked {
 		return fmt.Sprintf("IP %s blocked: %s", r.IP, r.BlockReason)
 	}
-	return fmt.Sprintf("IP %s not blocked\n", r.IP)
+	return fmt.Sprintf("IP %s not blocked", r.IP)
 }
 
 const defaultSeparator = "."
