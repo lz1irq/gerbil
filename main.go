@@ -1,25 +1,35 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 )
 
+var RBLAddress string
+var CheckedIP string
+
+func init() {
+	flag.StringVar(
+		&RBLAddress, "rbl", "zen.spamhaus.org",
+		"Address of a single DNS RBL service to query",
+	)
+
+	flag.StringVar(&CheckedIP, "ip", "", "IP address to check in RBL")
+	flag.Parse()
+}
+
 func main() {
-	if len(os.Args) < 3 {
-		fmt.Printf("Usage: %s i.p.to.check dns.rbl.domain\n", os.Args[0])
+	if CheckedIP == "" {
+		flag.Usage()
 		os.Exit(5)
 	}
-	rawIP := os.Args[1]
-	fmt.Printf("Original IP: %s\n", rawIP)
-	dnsRbl := os.Args[2]
-	fmt.Printf("DNS RBL domain: %s\n", dnsRbl)
 
-	rbl := NewRBL(dnsRbl, ".")
+	rbl := NewRBL(RBLAddress, ".")
 
-	result, err := rbl.CheckIP(rawIP)
+	result, err := rbl.CheckIP(CheckedIP)
 	if err != nil {
-		fmt.Printf("Failed to check IP %s: %s\n", rawIP, err.Error())
+		fmt.Printf("Failed to check IP %s: %s\n", CheckedIP, err.Error())
 		os.Exit(5)
 	}
 	fmt.Println(result)

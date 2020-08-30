@@ -51,7 +51,6 @@ func NewRBL(domain, separator string) *RBL {
 // CheckIP checks whether is considered blocked in this particular RBL.
 func (r *RBL) CheckIP(ip string) (*RBLResult, error) {
 	queryDomain := r.formatQuery(ip)
-	fmt.Printf("queryDomain : %s\n", queryDomain)
 
 	isBlocked, err := r.isBlocked(queryDomain)
 	if err != nil {
