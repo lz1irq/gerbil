@@ -119,8 +119,12 @@ func (r *RBL) getBlockReason(query string) (string, error) {
 }
 
 func (r *RBL) formatQuery(ip string) string {
-	reversedIP := r.reverseIP(ip)
-	return reversedIP + "." + r.Domain
+	addr := net.ParseIP(ip)
+	if addr != nil {
+		reversedIP := r.reverseIP(ip)
+		return reversedIP + "." + r.Domain
+	}
+	return ip + "." + r.Domain
 }
 
 func (r *RBL) reverseIP(ip string) string {
