@@ -10,7 +10,7 @@ import (
 
 var RBLAddress string
 var RBLFile string
-var CheckedIP string
+var CheckedHost string
 
 func init() {
 	flag.StringVar(
@@ -22,12 +22,12 @@ func init() {
 		"File with list of RBLs to check, one per line",
 	)
 
-	flag.StringVar(&CheckedIP, "ip", "", "IP address to check in RBL")
+	flag.StringVar(&CheckedHost, "host", "", "IP address or domain to check in RBL")
 	flag.Parse()
 }
 
 func main() {
-	if CheckedIP == "" || (RBLAddress == "" && RBLFile == "") {
+	if CheckedHost == "" || (RBLAddress == "" && RBLFile == "") {
 		flag.Usage()
 		os.Exit(5)
 	}
@@ -38,15 +38,22 @@ func main() {
 		os.Exit(5)
 	}
 
+	var status string = "OK: " + CheckedHost + " at "
 	for _, rbl := range rbls {
-		result, err := rbl.CheckIP(CheckedIP)
+		result, err := rbl.CheckIP(CheckedHost)
 		if err != nil {
-			fmt.Printf("Failed to check IP %s: %s\n", CheckedIP, err.Error())
-			os.Exit(5)
+			fmt.Printf("CRITICAL: failed to check %s at %s: %s\n", CheckedHost, rbl.Domain, err.Error())
+			os.Exit(2)
 		}
-		fmt.Printf("rbl=%s, ip=%s, blocked=%t, reason=%s\n", rbl.Domain, CheckedIP, result.IsBlocked, result.BlockReason)
+		if result.IsBlocked {
+			fmt.Printf("CRITICAL: %s blocked at %s: %s\n", CheckedHost, rbl.Domain, result.BlockReason)
+			os.Exit(2)
+		} else {
+			status += rbl.Domain + ", "
+		}
 	}
-
+	fmt.Println(status)
+	os.Exit(0)
 }
 
 func loadRBLs(rblAddress, rblFile string) ([]*RBL, error) {
